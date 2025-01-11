@@ -1,14 +1,17 @@
-// Simple auth service
 const authService = {
-    // In a real application, these would be stored securely and not in client-side code
     credentials: {
-        username: 'admin',
-        password: ',uF6N20Apu~%X7!1£'
+        username: import.meta.env?.VITE_AUTH_USERNAME,
+        password: import.meta.env?.VITE_AUTH_PASSWORD
     },
 
     isAuthenticated: false,
 
     login(username, password) {
+        if (!this.credentials.username || !this.credentials.password) {
+            console.error('Authentication credentials not properly configured');
+            return false;
+        }
+        
         if (username === this.credentials.username && password === this.credentials.password) {
             this.isAuthenticated = true;
             localStorage.setItem('isAuthenticated', 'true');
@@ -23,8 +26,7 @@ const authService = {
     },
 
     checkAuth() {
-        this.isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
-        return this.isAuthenticated;
+        return localStorage.getItem('isAuthenticated') === 'true';
     }
 };
 

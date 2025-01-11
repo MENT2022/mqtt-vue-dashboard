@@ -23,11 +23,11 @@ createApp({
         isAuthenticated.value = authService.checkAuth();
 
         const mqttOptions = {
-            hostname: '270e5d38ecbe4c2b89b7e54a787d3068.s1.eu.hivemq.cloud',
-            port: 8884,
+            hostname: import.meta.env?.VITE_MQTT_HOSTNAME || '270e5d38ecbe4c2b89b7e54a787d3068.s1.eu.hivemq.cloud',
+            port: parseInt(import.meta.env?.VITE_MQTT_PORT || '8884'),
             protocol: 'wss',
-            username: 'GitLabUser',
-            password: '!+a7Sp9G8spZK}D',
+            username: import.meta.env?.VITE_MQTT_USERNAME || 'GitLabUser',
+            password: import.meta.env?.VITE_MQTT_PASSWORD || '!+a7Sp9G8spZK}D',
             clean: true,
             connectTimeout: 30000,
             reconnectPeriod: 5000,

@@ -16,17 +16,29 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
           node-version: 18
-          cache: 'npm'
-      - name: Install dependencies
-        run: npm install
+
+      - name: Install Dependencies
+        run: |
+          npm ci || npm install
+          
       - name: Build
         run: npm run build
+        env:
+          VITE_MQTT_HOSTNAME: ${{ secrets.VITE_MQTT_HOSTNAME }}
+          VITE_MQTT_PORT: ${{ secrets.VITE_MQTT_PORT }}
+          VITE_MQTT_USERNAME: ${{ secrets.VITE_MQTT_USERNAME }}
+          VITE_MQTT_PASSWORD: ${{ secrets.VITE_MQTT_PASSWORD }}
+          VITE_AUTH_USERNAME: ${{ secrets.VITE_AUTH_USERNAME }}
+          VITE_AUTH_PASSWORD: ${{ secrets.VITE_AUTH_PASSWORD }}
+
       - name: Setup Pages
         uses: actions/configure-pages@v3
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2
         with:
