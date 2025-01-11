@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MQTT Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/mqtt@4.3.7/dist/mqtt.min.js"></script>
+    <script src="https://unpkg.com/vue@3.2.31/dist/vue.global.prod.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <style>
+        .device-card {
+            margin-bottom: 1rem;
+        }
+        .chart-container {
+            position: relative;
+            height: 200px;
+            width: 100%;
+            margin-top: 1rem;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        .connected { background-color: #28a745; }
+        .disconnected { background-color: #dc3545; }
+        .connecting { background-color: #ffc107; }
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="container mt-4">
+        <!-- Login Form -->
+        <div v-if="!isAuthenticated" class="login-container">
+            <h2 class="text-center mb-4">Login</h2>
+            <form @submit.prevent="login" class="needs-validation">
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" 
+                           class="form-control" 
+                           id="username" 
+                           v-model="username" 
+                           required>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" 
+                           class="form-control" 
+                           id="password" 
+                           v-model="password" 
+                           required>
+                </div>
+                <div v-if="loginError" class="alert alert-danger">
+                    {{ loginError }}
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Login</button>
+            </form>
+        </div>
+
+        <!-- Dashboard -->
+        <div v-else>
+            <div class="row mb-4">
+                <div class="col">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h1>MQTT Dashboard</h1>
+                        <button @click="logout" class="btn btn-outline-danger">
+                            Logout
+                        </button>
+                    </div>
+                    <div class="d-flex align-items-center mt-2">
+                        <span class="status-indicator" :class="connectionStatusClass"></span>
+                        <span>Status: {{ connectionStatus }}</span>
+                        <button @click="reconnect" class="btn btn-primary btn-sm ms-2" :disabled="connectionStatus === 'Connected'">
+                            Reconnect
+                        </button>
+                    </div>
+                    <div v-if="connectionError" class="alert alert-danger mt-2">
+                        {{ connectionError }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-8">
+                    <div v-for="deviceId in deviceList" :key="deviceId" class="card device-card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                Device: {{ deviceId }}
+                                <small class="text-muted">Last Update: {{ getLastUpdateTime(deviceId) }}</small>
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4" v-for="i in 3" :key="i">
+                                    <h6>Sensor {{ i }}</h6>
+                                    <div v-if="devices[deviceId]?.tftvalue">
+                                        <div v-for="j in 3" :key="j">
+                                            Line {{ j }}: {{ devices[deviceId].tftvalue[`S${i}_L${j}`] || 'N/A' }}
+                                        </div>
+                                    </div>
+                                    <div class="chart-container">
+                                        <canvas :id="'sensor' + i + '-graph-' + deviceId"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Message History</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="message-list" style="max-height: 400px; overflow-y: auto;">
+                                <div v-for="(msg, index) in messages" :key="index" class="mb-2">
+                                    <small class="text-muted">{{ msg.timestamp }}</small>
+                                    <div>{{ msg.topic }}: {{ JSON.stringify(msg.payload) }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>
