@@ -39,11 +39,12 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v3
 
-      - name: Ensure Upload Artifact Action
-        uses: actions/upload-artifact@v3
+      # Ensure Upload Artifact Action step REMOVED
+      # - name: Ensure Upload Artifact Action
+      #   uses: actions/upload-artifact@v3 
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v2
+        uses: actions/upload-pages-artifact@v2 # Rely on this for Pages artifacts
         with:
           path: './dist'
 
